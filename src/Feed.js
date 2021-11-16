@@ -1,30 +1,39 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./Feed.css";
 import StoryReel from "./StoryReel";
 import MessageSender from "./MessageSender";
 import Post from "./Post";
+import db from "./dataBase";
+import { onSnapshot, collection } from "firebase/firestore";
 
 const Feed = () => {
+  const [posts, setPosts] = useState([]);
+
+  const colRef = collection(db, "posts");
+
+  useEffect(() => {
+    onSnapshot(colRef, (snapshot) => {
+      setPosts(snapshot.docs.map((doc) => ({ id: doc._id, data: doc.data() })));
+    });
+
+    // db.collection("posts").onSnapshot((snapshot) =>
+    //   setPosts(snapshot.docs.map((doc) => ({ id: doc._id, data: doc.data() })))
+    // );
+  }, []);
   return (
     <div className="feed">
       <StoryReel />
       <MessageSender />
-      <Post
-        profilePic="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUpGSoVhY7zDpcp7kopM99d_VBh8avOMwlaw&usqp=CAU"
-        message="Wow this works!"
-        timestamp="This is the timestamp"
-        username="Rizwan"
-        image="https://i.guim.co.uk/img/media/67d0eadeb4cdce6d2ddacdf4faa8f3c3b630a811/0_80_3000_1802/master/3000.jpg?width=1200&height=1200&quality=85&auto=format&fit=crop&s=f39071145c8494d76603abe505646353"
-      />
-      <Post
-        profilePic="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUpGSoVhY7zDpcp7kopM99d_VBh8avOMwlaw&usqp=CAU"
-        message="Wow this works!"
-        timestamp="This is the timestamp"
-        username="Rizwan"
-        image="https://i.guim.co.uk/img/media/67d0eadeb4cdce6d2ddacdf4faa8f3c3b630a811/0_80_3000_1802/master/3000.jpg?width=1200&height=1200&quality=85&auto=format&fit=crop&s=f39071145c8494d76603abe505646353"
-      />
-      <Post />
-      <Post />
+      {posts.map((post) => (
+        <Post
+          key={post.id}
+          profilePic={post.data.profilePic}
+          message={post.data.message}
+          timestamp={post.data.timestamp}
+          username={post.data.username}
+          image={post.data.image}
+        />
+      ))}
     </div>
   );
 };
